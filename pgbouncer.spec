@@ -6,18 +6,17 @@
 
 Name:       pgbouncer
 Version:    1.14.0
-Release:    2%{?dist}
+Release:    1%{?dist}
 Summary:    Lightweight connection pooler for PostgreSQL
 License:    MIT and BSD
-URL:        https://pgbouncer.github.io/
+URL:        https://www.pgbouncer.org
 
 Source0:    https://www.pgbouncer.org/downloads/files//downloads/files/%{version}/%{name}-%{version}.tar.gz
 Source1:    %{name}.init
 Source2:    %{name}.sysconfig
 Source3:    %{name}.logrotate
 Source4:    %{name}.service
-Source5:    %{name}.service.el7
-Source6:    %{name}.pam
+Source5:    %{name}.pam
 
 Patch0:     %{name}-ini.patch
 
@@ -55,7 +54,7 @@ pgbouncer is a lightweight connection pooler for PostgreSQL and uses libevent
 for low-level socket handling.
 
 %prep
-%autosetup
+%autosetup -p0
 
 %if 0%{?fedora} || 0%{?rhel} >= 8
 sed -i -e 's|/usr/bin/env python|%__python3|g' etc/mkauth.py
@@ -65,15 +64,10 @@ sed -i -e 's|/usr/bin/env python|%__python2|g' etc/mkauth.py
 
 
 %build
-# Building with systemd flag tries to enable notify support which is not
-# available on RHEL/CentOS 7.
 %configure \
     --enable-debug \
     --with-pam \
-%if 0%{?fedora} || 0%{?rhel} >= 8
     --with-systemd
-%endif
-
 %make_build V=1
 
 %install
@@ -89,7 +83,7 @@ install -p -m 700 etc/mkauth.py %{buildroot}%{_sysconfdir}/%{name}/
 
 # Install pam configuration file
 mkdir -p %{buildroot}%{_sysconfdir}/pam.d
-install -p -m 644 %{SOURCE6} %{buildroot}%{_sysconfdir}/pam.d/%{name}
+install -p -m 644 %{SOURCE5} %{buildroot}%{_sysconfdir}/pam.d/%{name}
 
 # Temporary folder
 mkdir -p %{buildroot}%{_rundir}/%{name}
@@ -101,11 +95,7 @@ mkdir -p %{buildroot}%{_localstatedir}/log/%{name}
 
 # systemd unit
 install -d %{buildroot}%{_unitdir}
-%if 0%{?rhel} == 7
-install -m 644 %{SOURCE5} %{buildroot}%{_unitdir}/%{name}.service
-%else
 install -m 644 %{SOURCE4} %{buildroot}%{_unitdir}/%{name}.service
-%endif
 
 # tmpfiles.d configuration
 mkdir -p %{buildroot}%{_tmpfilesdir}
@@ -188,9 +178,6 @@ fi
 %endif
 
 %changelog
-* Wed Jul 22 2020 Simone Caronni <negativo17@gmail.com> - 1.14.0-2
-- Do not enable notify support on RHEL/CentOS 7.
-
 * Wed Jul 22 2020 Simone Caronni <negativo17@gmail.com> - 1.14.0-1
 - Update to 1.14.0.
 - Update URL.
