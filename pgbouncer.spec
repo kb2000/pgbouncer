@@ -55,7 +55,7 @@ pgbouncer is a lightweight connection pooler for PostgreSQL and uses libevent
 for low-level socket handling.
 
 %prep
-%autosetup -p0
+%setup -p0
 
 %if 0%{?fedora} || 0%{?rhel} >= 8
 sed -i -e 's|/usr/bin/env python|%__python3|g' etc/mkauth.py
